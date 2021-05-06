@@ -6,6 +6,7 @@
     - [Create image pull secret](#create-image-pull-secret)
     - [Run on K8s](#run-on-k8s)
     - [Prometheus Config Snippet:](#prometheus-config-snippet)
+  - [Grafana](#grafana)
 
 Custom Collector for Prometheus
 
@@ -45,4 +46,10 @@ prometheus:
       metrics_path: /metrics
       static_configs:
       - targets: ['api-collector:8000']
+```
+
+## Grafana
+
+```txt
+sum(workload_security_computers_total{job="api-collector"})
 ```
