@@ -7,6 +7,7 @@
     - [Run on K8s](#run-on-k8s)
     - [Prometheus Config Snippet:](#prometheus-config-snippet)
   - [Grafana](#grafana)
+  - [Tricks](#tricks)
 
 Custom Collector for Prometheus
 
@@ -52,4 +53,18 @@ prometheus:
 
 ```txt
 sum(workload_security_computers_total{job="api-collector"})
+```
+
+## Tricks
+
+Quick shell in the cluster
+
+```sh
+kubectl run -it -n prometheus --image=ubuntu ubuntu --restart=Never --rm -- /bin/bash
+```
+
+Jump into the collector
+
+```sh
+kubectl exec -it -n prometheus api-collector -- /bin/sh
 ```
