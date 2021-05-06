@@ -1,29 +1,47 @@
-import ssl
+"""API Metric Collector
 
-ssl._create_default_https_context = ssl._create_unverified_context
-import urllib3
+This script is a generic metrics collector, designed to work with any
+available APIs. It uses dependency injection to dynamically add and
+remove metrics collectors located in ./collectors. It uses the
+Prometheus python client for the interaction with Prometheus.
+
+It creates an http server on port 8000, which enables Prometheus to
+scrape the produced metrics.
+"""
 
 import time
-import json
-import yaml
-import requests
 import os
 import glob
-
-# dependency injection
-import importlib
 import inspect
+import importlib
+import ssl
+import requests
 from collectors import *
-
 from prometheus_client.core import GaugeMetricFamily, REGISTRY, CounterMetricFamily
 from prometheus_client import start_http_server
 
+ssl._create_default_https_context = ssl._create_unverified_context
 
-class CustomCollector(object):
+class CustomCollector():
+    """
+    This class represents the CustomCollector for Prometheus
+
+    Methods
+    -------
+    collect
+        The collector which injects the custom metrics generators
+        located inside the collectors namespace
+    """
+
     def __init__(self):
         pass
 
     def collect(self):
+        """Creates the metrics for Prometheus
+
+        Injects the custom metrics generators and provides the metrics
+        via the http server to Prometheus
+        """
 
         for collector in glob.glob("collectors/*.py"):
             # convert the script file name into it's module name
@@ -44,21 +62,19 @@ class CustomCollector(object):
 
             # call module.collect ans store the return value in response
             response = module.collect(**kwargs)
-            
 
-            c = CounterMetricFamily(response['CounterMetricFamilyName'],
-                                    response['CounterMetricFamilyHelpText'],
-                                    labels=response['CounterMetricFamilyLabels'])
+            cmf = CounterMetricFamily(response['CounterMetricFamilyName'],
+                                      response['CounterMetricFamilyHelpText'],
+                                      labels=response['CounterMetricFamilyLabels'])
 
             for metric in response["Metrics"]:
                 computer_name = metric['hostname']
                 computer_rule_count = metric['metric']
                 computer_ip = metric['ip']
-            
-                c.add_metric([computer_name, str(computer_ip)], computer_rule_count)
 
-            yield c
+                cmf.add_metric([computer_name, str(computer_ip)], computer_rule_count)
 
+            yield cmf
 
 if __name__ == '__main__':
     start_http_server(8000)
