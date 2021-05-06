@@ -68,3 +68,9 @@ Jump into the collector
 ```sh
 kubectl exec -it -n prometheus api-collector -- /bin/sh
 ```
+
+Logs of the collector
+
+```sh
+kubectl -n prometheus logs $(kubectl -n prometheus get pods -o json | jq -r '.items[].metadata | select(.name | startswith("api-collector")) | .name')
+```
