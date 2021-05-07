@@ -60,13 +60,14 @@ class CustomCollector():
             for name in args:
                 kwargs[name] = get_service_instance(name)
 
-            # call module.collect ans store the return value in response
+            # call module.collect and store the return value in response
             response = module.collect(**kwargs)
 
             cmf = CounterMetricFamily(response['CounterMetricFamilyName'],
                                       response['CounterMetricFamilyHelpText'],
                                       labels=response['CounterMetricFamilyLabels'])
 
+            # loop over the the metrics reported
             for metric in response["Metrics"]:
                 computer_name = metric['hostname']
                 computer_rule_count = metric['metric']
