@@ -2,7 +2,7 @@
 
 This script is a pluggable module for the api-collector. It collects
 information from Workload Security by it's RESTful API, calculates some
-metrics and creates a dictionary which will be feed into Prometheus
+metrics and creates a dictionary which is feedede into Prometheus
 by the api-collector.
 
 This file has one single funtion collect(), which is called by the
@@ -46,8 +46,8 @@ def collect() -> dict:
 
     # Define your metrics here
     result = {
-        "CounterMetricFamilyName": "workload_security_computers",
-        "CounterMetricFamilyHelpText": "Workload Security Assigned IPS Rules Metrics",
+        "CounterMetricFamilyName": "ws_computers_ips_mode_prevent",
+        "CounterMetricFamilyHelpText": "Workload Security IPS in Prevent Mode",
         "CounterMetricFamilyLabels": ['displayName', 'lastIPUsed'],
         "Metrics": []
     }
@@ -74,18 +74,19 @@ def collect() -> dict:
         for computer in response["computers"]:
             computer_name = computer["displayName"]
             computer_ip = str(computer["lastIPUsed"])
-            computer_rule_count = 0
+            computer_ips_prevent = 0
 
-            if "ruleIDs" in computer["intrusionPrevention"]:
-                computer_rule_count = len(computer["intrusionPrevention"]["ruleIDs"])
+            if "state" in computer["intrusionPrevention"]:
+                if computer["intrusionPrevention"]["state"] == "prevent":
+                    computer_ips_prevent = 1
             else:
-                computer_rule_count = 0
+                computer_ips_prevent = 0
 
             # Add a single metric
             result['Metrics'].append({
                 "hostname": computer_name,
                 "ip": str(computer_ip),
-                "metric": computer_rule_count
+                "metric": computer_ips_prevent
             })
 
     # Return results
