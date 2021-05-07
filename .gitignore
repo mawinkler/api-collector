@@ -1,2 +1,2 @@
-etc/ws_url
-etc/ws_api_key
+config.json
+api-collector-patched.yaml
