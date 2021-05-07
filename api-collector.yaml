@@ -31,16 +31,9 @@ spec:
     spec:
       containers:
         - name: api-collector
-          image: 172.18.255.1:5000/api-collector
+          image: ${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/api-collector
           imagePullPolicy: Always
           ports:
           - containerPort: 8000
-          volumeMounts:
-          - name: workload-security-credentials
-            mountPath: "/etc/workload-security-credentials"
       imagePullSecrets:
         - name: regcred
-      volumes:
-        - name: workload-security-credentials
-          secret:
-            secretName: workload-security

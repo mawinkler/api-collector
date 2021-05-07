@@ -1,21 +1,33 @@
 #!/bin/bash
 
+set -e
+
+REGISTRY_HOSTNAME="$(jq -r '.registry_hostname' config.json)"
+REGISTRY_PORT="$(jq -r '.registry_port' config.json)"
+REGISTRY_USERNAME="$(jq -r '.registry_username' config.json)"
+REGISTRY_PASSWORD="$(jq -r '.registry_password' config.json)"
+REGISTRY_EMAIL="$(jq -r '.registry_email' config.json)"
+
+# login, build and push the api-collector
+echo ${REGISTRY_PASSWORD} | \
+    docker login ${REGISTRY_HOSTNAME}:${REGISTRY_PORT} --username ${REGISTRY_USERNAME} --password-stdin
 docker build -t api-collector .
-docker tag api-collector 172.18.255.1:5000/api-collector
-docker push 172.18.255.1:5000/api-collector
+docker tag api-collector ${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/api-collector
+docker push ${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/api-collector
 
-# kubectl -n prometheus delete -f api-collector.yaml
-
+# create container registry secret
 kubectl -n prometheus create secret docker-registry regcred \
-    --docker-server=172.18.255.1:5000 \
-    --docker-username=admin \
-    --docker-password=trendmicro \
-    --docker-email=info@mail.com \
+    --docker-server=${REGISTRY_HOSTNAME}:${REGISTRY_PORT} \
+    --docker-username=${REGISTRY_USERNAME} \
+    --docker-password=${REGISTRY_PASSWORD} \
+    --docker-email=i${REGISTRY_EMAIL} \
     --dry-run=client -o yaml | kubectl apply -f -
 
-kubectl -n prometheus create secret generic workload-security \
-    --from-file=ws_url=etc/ws_url \
-    --from-file=api_key=etc/ws_api_key \
-    --dry-run=client -o yaml | kubectl apply -f -
+# patch api-collector manifest to point to the registry
+eval "cat <<EOF
+$(<api-collector.yaml)
+EOF
+" 2> /dev/null > api-collector-patched.yaml
 
-kubectl -n prometheus apply -f api-collector.yaml
+# deploy the api-collector
+kubectl -n prometheus apply -f api-collector-patched.yaml

@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -e
+
+# create configmaps containing the python scripts
 for collector in collectors/*.py; do
     name_configmap=$(basename -s '.py' ${collector//_/-})
     name_collector=$(basename ${collector})
@@ -23,6 +26,3 @@ spec:
             name: ${name_configmap}
 "
 done
-
-# restart the api-collector
-kubectl -n prometheus delete pod $(kubectl -n prometheus get pods -o json | jq -r '.items[].metadata | select(.name | startswith("api-collector")) | .name')
