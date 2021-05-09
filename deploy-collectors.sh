@@ -3,7 +3,7 @@
 set -e
 
 # create configmaps containing the python scripts
-for collector in collectors/*.py; do
+for collector in collectors-enabled/*.py; do
     name_configmap=$(basename -s '.py' ${collector//_/-})
     name_collector=$(basename ${collector})
 

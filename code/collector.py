@@ -69,11 +69,7 @@ class CustomCollector():
 
             # loop over the the metrics reported
             for metric in response["Metrics"]:
-                computer_name = metric['hostname']
-                computer_rule_count = metric['metric']
-                computer_ip = metric['ip']
-
-                cmf.add_metric([computer_name, str(computer_ip)], computer_rule_count)
+                cmf.add_metric(metric[0], metric[1])
 
             yield cmf
 
