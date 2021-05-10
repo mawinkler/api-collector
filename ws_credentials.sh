@@ -1,0 +1,28 @@
+#!/bin/bash
+
+set -e
+
+WS_URL="$(jq -r '.ws_url' config.json)"
+WS_API_KEY="$(jq -r '.ws_api_key' config.json)"
+
+# create workload security secret
+kubectl -n prometheus create secret generic workload-security \
+    --from-literal=ws_url=${WS_URL} \
+    --from-literal=api_key=${WS_API_KEY} \
+    --dry-run=client -o yaml | kubectl apply -f -
+
+# create workload security secret volume mount
+kubectl -n prometheus patch deployment api-collector --patch "
+spec:
+  template:
+    spec:
+      containers:
+        - name: api-collector
+          volumeMounts:
+          - name: workload-security-credentials
+            mountPath: "/etc/workload-security-credentials"
+      volumes:
+        - name: workload-security-credentials
+          secret:
+            secretName: workload-security
+"

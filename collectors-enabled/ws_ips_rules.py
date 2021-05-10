@@ -1,7 +1,7 @@
-"""Example metrics collector for Astro Weather
+"""Example metrics collector for Workload Security
 
 This script is a pluggable module for the api-collector. It collects
-information from 7Timer by it's RESTful API, calculates some
+information from Workload Security by it's RESTful API, calculates some
 metrics and creates a dictionary which is feedede into Prometheus
 by the api-collector.
 
@@ -13,8 +13,6 @@ credentials in the given directory.
 
 import json
 import requests
-import time
-from datetime import datetime, timedelta
 import logging
 
 _LOGGER = logging.getLogger(__name__)
@@ -43,51 +41,53 @@ def collect() -> dict:
     """
 
     # API credentials are mounted to /etc
+    ws_url=open('/etc/workload-security-credentials/ws_url', 'r').read()
+    api_key=open('/etc/workload-security-credentials/api_key', 'r').read()
 
     # Define your metrics here
     result = {
-        "CounterMetricFamilyName": "astroweather",
-        "CounterMetricFamilyHelpText": "AstroWeather Cloudcoverage",
-        "CounterMetricFamilyLabels": ['init', 'timepoint'],
+        "CounterMetricFamilyName": "ws_computers_ips_rules_count",
+        "CounterMetricFamilyHelpText": "Workload Security Assigned IPS Rules Count",
+        "CounterMetricFamilyLabels": ['displayName', 'lastIPUsed'],
         "Metrics": []
     }
 
     # API query and response parsing here
-    url = "http://www.7timer.info/bin/api.pl?lon=11.985&lat=48.313&product=astro&output=json"
+    url = "https://" + ws_url + "/api/computers"
     data = {}
     post_header = {
         "Content-type": "application/json",
+        "api-secret-key": api_key,
+        "api-version": "v1",
     }
-    resp = requests.get(
+    response = requests.get(
         url, data=json.dumps(data), headers=post_header, verify=True
-    )
-    plain = str(resp.text).replace("\n", " ")
-    response = json.loads(plain)
-                
+    ).json()
+
     # Error handling
     if "message" in response:
         if response['message'] == "Invalid API Key":
             raise ValueError("Invalid API Key")
 
-    init = datetime.strptime(response['init'], "%Y%m%d%H")
-
     # Calculate your metrics
-    if len(response['dataseries']) > 0:
-        for forecast in response['dataseries']:
+    if len(response['computers']) > 0:
+        for computer in response['computers']:
             labels = []
-            labels.append(str(init))
-            labels.append(str(init + timedelta(hours=forecast['timepoint'])))
-            metric = forecast['cloudcover']
-            if not isinstance(metric, int):
+            labels.append(computer['displayName'])
+            labels.append(str(computer['lastIPUsed']))
+
+            metric = 0
+
+            if "ruleIDs" in computer['intrusionPrevention']:
+                metric = len(computer['intrusionPrevention']['ruleIDs'])
+            else:
                 metric = 0
 
             # Add a single metric
             result['Metrics'].append([labels, metric])
 
-    _LOGGER.debug(result)
     # Return results
     return result
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.DEBUG, format='%(relativeCreated)6d %(threadName)s %(message)s')
     collect()

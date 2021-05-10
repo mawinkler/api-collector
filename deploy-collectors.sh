@@ -18,7 +18,7 @@ spec:
         - name: api-collector
           volumeMounts:
           - name: ${name_configmap}
-            mountPath: "/code/${collector}"
+            mountPath: "/code/${collector//-enabled//}"
             subPath: ${name_collector}
       volumes:
         - name: ${name_configmap}

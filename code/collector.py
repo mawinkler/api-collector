@@ -16,11 +16,14 @@ import inspect
 import importlib
 import ssl
 import requests
+import logging
 from collectors import *
 from prometheus_client.core import GaugeMetricFamily, REGISTRY, CounterMetricFamily
 from prometheus_client import start_http_server
 
 ssl._create_default_https_context = ssl._create_unverified_context
+
+_LOGGER = logging.getLogger(__name__)
 
 class CustomCollector():
     """
@@ -48,6 +51,8 @@ class CustomCollector():
             # (hoping it doesn't contain any spaces or dash characters)
             module_name = "." + os.path.basename(collector).replace('.py', '')
 
+            _LOGGER.info("Running collector {}".format(collector))
+
             # import the module of that name
             module = importlib.import_module(module_name, 'collectors')
 
@@ -66,6 +71,8 @@ class CustomCollector():
             cmf = CounterMetricFamily(response['CounterMetricFamilyName'],
                                       response['CounterMetricFamilyHelpText'],
                                       labels=response['CounterMetricFamilyLabels'])
+
+            _LOGGER.info("{} metrics from collector {} received".format(len(response["Metrics"]), collector))
 
             # loop over the the metrics reported
             for metric in response["Metrics"]:

@@ -13,9 +13,9 @@ credentials in the given directory.
 
 import json
 import requests
-# import ssl
-# ssl._create_default_https_context = ssl._create_unverified_context
-# import urllib3
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 def collect() -> dict:
     """
@@ -66,29 +66,27 @@ def collect() -> dict:
 
     # Error handling
     if "message" in response:
-        if response["message"] == "Invalid API Key":
+        if response['message'] == "Invalid API Key":
             raise ValueError("Invalid API Key")
 
     # Calculate your metrics
-    if len(response["computers"]) > 0:
-        for computer in response["computers"]:
+    if len(response['computers']) > 0:
+        for computer in response['computers']:
             labels = []
-            labels.append(computer["displayName"])
-            labels.append(str(computer["lastIPUsed"]))
+            labels.append(computer['displayName'])
+            labels.append(str(computer['lastIPUsed']))
 
             metric = 0
 
-            if "state" in computer["intrusionPrevention"]:
-                if computer["intrusionPrevention"]["state"] == "prevent":
+            if "state" in computer['intrusionPrevention']:
+                if computer['intrusionPrevention']['state'] == "prevent":
                     metric = 1
 
-            print([labels, metric])
             # Add a single metric
             result['Metrics'].append([labels, metric])
 
     # Return results
     return result
-
 
 if __name__ == '__main__':
     collect()
