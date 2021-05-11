@@ -54,7 +54,7 @@ def collect() -> dict:
     result = {
         "CounterMetricFamilyName": "astroweather",
         "CounterMetricFamilyHelpText": "AstroWeather this Nights Cloudcoverage",
-        "CounterMetricFamilyLabels": ['init', 'timepoint'],
+        "CounterMetricFamilyLabels": ['timepoint'],
         "Metrics": []
     }
 
@@ -107,8 +107,7 @@ def collect() -> dict:
             )
             
             labels = []
-            labels.append(str(init))
-            labels.append(str(forecast_time))
+            labels.append(str(forecast_time.strftime("%H:%M")))
             metric = condition
 
             # Add a single metric

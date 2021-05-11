@@ -1,4 +1,4 @@
-FROM python:3.6
+FROM python:3.9
 
 ADD code /code
 RUN pip install -r /code/requirements.txt

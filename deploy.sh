@@ -2,6 +2,7 @@
 
 set -e
 
+NAMESPACE="$(jq -r '.namespace' config.json)"
 REGISTRY_HOSTNAME="$(jq -r '.registry_hostname' config.json)"
 REGISTRY_PORT="$(jq -r '.registry_port' config.json)"
 REGISTRY_USERNAME="$(jq -r '.registry_username' config.json)"
@@ -15,8 +16,10 @@ docker build -t api-collector .
 docker tag api-collector ${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/api-collector
 docker push ${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/api-collector
 
+kubectl create namespace ${NAMESPACE} --dry-run=client -o yaml | kubectl apply -f -
+
 # create container registry secret
-kubectl -n prometheus create secret docker-registry regcred \
+kubectl -n ${NAMESPACE} create secret docker-registry regcred \
     --docker-server=${REGISTRY_HOSTNAME}:${REGISTRY_PORT} \
     --docker-username=${REGISTRY_USERNAME} \
     --docker-password=${REGISTRY_PASSWORD} \
@@ -30,4 +33,4 @@ EOF
 " 2> /dev/null > api-collector-patched.yaml
 
 # deploy the api-collector
-kubectl -n prometheus apply -f api-collector-patched.yaml
+kubectl -n ${NAMESPACE} apply -f api-collector-patched.yaml

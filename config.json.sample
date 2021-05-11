@@ -1,0 +1,11 @@
+{
+    "namespace": "prometheus",
+    "registry_hostname": "172.18.255.1",
+    "registry_port": "5000",
+    "registry_username": "admin",
+    "registry_password": "admin",
+    "registry_email": "spam@cloud.com",
+
+    "ws_url": "app.deepsecurity.trendmicro.com:443",
+    "ws_api_key": "<API KEY>"
+}
