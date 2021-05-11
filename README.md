@@ -11,19 +11,17 @@
 
 ## About
 
-Generic API-Collector implemented as a Custom Collector for Prometheus. It supports pluggable collectors at runtime!
+Generic API-Collector implemented as a Custom Collector for Prometheus. It supports pluggable collectors and updates at runtime! For this initial version, CounterMetrics are the only metrics supported.
 
-Two simple collector examples for Workload Security are provided.
+A sample collector to calculate the sky quality forecast for stargazing is provided together with two simple collector examples for Workload Security (counting assigned IPS rules and computers with IPS in prevent mode).
 
 ### Collector Template
 
-Below, a sample collector template is shown. They must all be located inside the `collectors` directory.
+Below, a collector template is shown. They must all be located inside the `collectors-enabled` directory to be deployed.
 
-The general structure is as following:
+The general structure is as shown below:
 
 ```py
-import ...
-
 def collect() -> dict:
 
     url=open('/etc/mysecrets/url', 'r').read()
@@ -37,6 +35,7 @@ def collect() -> dict:
         "Metrics": []
     }
 
+    # Do your API query
     url = "https://" + url
     data = {}
     post_header = {
@@ -49,18 +48,21 @@ def collect() -> dict:
     ).json()
 
     # Error handling
+    # ...
 
     # Calculate your metrics
     if len(response[]) > 0:
         for item in response[]:
             # Do some calculations
+            # ...
+
+            labels = []
+            labels.append(str(attribute1))
+            labels.append(str(attribute2))
+            metric = calculated_result
 
             # Add a single metric
-            result['Metrics'].append({
-                "attribute1": attribute1,
-                "attribute2": attribute2,
-                "metric": mymetric
-            })
+            result['Metrics'].append([labels, metric])
 
     # Return results
     return result
@@ -78,20 +80,20 @@ def collect() -> dict:
 
     and adapt it to your environment
 
-2. Configure the overrides for your Prometheus deployment to query the api-collector
+2. Configure the overrides for your Prometheus deployment to query the api-collector. In a default Prometheus installation, the api-collector and it's components need to run within the prometheus namespace.
 
     ```yaml
     prometheus:
       prometheusSpec:
         additionalScrapeConfigs:
         - job_name: api-collector
-          scrape_interval: 30s
+          scrape_interval: 60s
           metrics_path: /
           static_configs:
           - targets: ['api-collector:8000']
     ```
 
-    Below, an example for a full deployment is shown. For simplicity, and if you're using the [c1-playground](https://github.com/mawinkler/c1-playground), you can modify the `deploy_prometheus` method to include the `prometheusSpec` and re-run the script `deploy-prometheus-grafana.sh`. Otherwise run the following to deploy Prometheus and Grafana on your cluster.
+    Below, an example for a full deployment is shown. For simplicity, you can use the [c1-playground](https://github.com/mawinkler/c1-playground) run the script `deploy-prometheus-grafana.sh`. Otherwise execute the following to deploy Prometheus and Grafana on your cluster.
 
     ```sh
     kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
@@ -191,6 +193,18 @@ sum by (job) (ws_computers_ips_mode_prevent_total) / (count by (job)(ws_computer
 ```
 
 ### Grafana
+
+Display the sky quality for tonights star gazing
+
+```Grafana
+sum(astroweather_total) / 3
+```
+
+1 - excellent,
+2 - good,
+3 - fair,
+4 - poor,
+5 - bad
 
 Query the percentage of computers with IPS mode set to prevent
 
