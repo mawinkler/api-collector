@@ -17,13 +17,13 @@ import importlib
 import ssl
 import requests
 import logging
-from collectors import *
-from prometheus_client.core import GaugeMetricFamily, REGISTRY, CounterMetricFamily
+from prometheus_client.core import GaugeMetricFamily, CounterMetricFamily, REGISTRY
 from prometheus_client import start_http_server
-
-ssl._create_default_https_context = ssl._create_unverified_context
+from prometheus_client import Summary
 
 _LOGGER = logging.getLogger(__name__)
+
+COLLECTOR_RUN_TIME = Summary('api_collector_collect_seconds', 'Full collector run seconds')
 
 class CustomCollector():
     """
@@ -39,6 +39,7 @@ class CustomCollector():
     def __init__(self):
         pass
 
+    @COLLECTOR_RUN_TIME.time()
     def collect(self):
         """Creates the metrics for Prometheus
 
