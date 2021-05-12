@@ -13,7 +13,7 @@ for collector in collectors-enabled/*.py; do
     kubectl -n ${NAMESPACE} create configmap ${name_configmap} \
         --from-file=${collector} --dry-run=client -o yaml | kubectl apply -f -
     
-    # path the api-collector deployment and set annotations to make
+    # patch the api-collector deployment and set annotations to make
     # potential changes in the collectors effective
     kubectl -n ${NAMESPACE} patch deployment api-collector --patch "
 spec:

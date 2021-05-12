@@ -1,7 +1,7 @@
 """Example metrics collector for Workload Security
 
 This script is a pluggable module for the api-collector. It collects
-information from Workload Security by it's RESTful API, calculates some
+information from File Storage Security by it's RESTful API, calculates some
 metrics and creates a dictionary which is feedede into Prometheus
 by the api-collector.
 
@@ -14,6 +14,7 @@ credentials in the given directory.
 import json
 import requests
 import logging
+from datetime import datetime, timedelta
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,27 +42,32 @@ def collect() -> dict:
     """
 
     # API credentials are mounted to /etc
-    ws_url=open('/etc/workload-security-credentials/ws_url', 'r').read()
+    c1_url=open('/etc/workload-security-credentials/c1_url', 'r').read()
     api_key=open('/etc/workload-security-credentials/api_key', 'r').read()
 
     # Define your metrics here
     result = {
-        "CounterMetricFamilyName": "ws_computers_ips_rules_count",
-        "CounterMetricFamilyHelpText": "Workload Security Assigned IPS Rules Count",
-        "CounterMetricFamilyLabels": ['platform', 'agentStatus', 'updateStatus', 'agentVersion', 'displayName', 'lastIPUsed'],
+        "CounterMetricFamilyName": "fss_detection_statistics",
+        "CounterMetricFamilyHelpText": "File Storage Daily Detection Statistics",
+        "CounterMetricFamilyLabels": ['statistic'],
         "Metrics": []
     }
 
+    startTime = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0).strftime("%Y-%m-%dT%H:%M:%SZ")
+    endTime = datetime.utcnow().replace(hour=23, minute=59, second=59, microsecond=999).strftime("%Y-%m-%dT%H:%M:%SZ")
+    interval = "1h"
+
     # API query and response parsing here
-    url = "https://" + ws_url + "/api/computers"
-    data = {}
+    url = "https://" + c1_url + "/api/filestorage/statistics/scans?from=" \
+        + startTime + "&to=" \
+        + endTime + "&interval=" + interval
     post_header = {
-        "Content-type": "application/json",
+        "Content-Type": "application/json",
         "api-secret-key": api_key,
         "api-version": "v1",
     }
     response = requests.get(
-        url, data=json.dumps(data), headers=post_header, verify=True
+        url, headers=post_header, verify=True
     ).json()
 
     # Error handling
@@ -70,29 +76,17 @@ def collect() -> dict:
             raise ValueError("Invalid API Key")
 
     # Calculate your metrics
-    if len(response['computers']) > 0:
-        for computer in response['computers']:
-            labels = []
-            labels.append(computer['platform'])
-            labels.append(computer['computerStatus']['agentStatus'])
-            if 'securityUpdates' in computer:
-                labels.append(computer['securityUpdates']['updateStatus']['statusMessage'])
-            else:
-                labels.append("Unmanaged")
-            labels.append(computer['agentVersion'])
-            labels.append(computer['displayName'])
-            labels.append(str(computer['lastIPUsed']))
+    scans = 0
+    detections = 0
+    if len(response['statistics']) > 0:
+        for statistic in response['statistics']:
+            scans += statistic['scans']
+            detections += statistic['detections']
 
-            metric = 0
-
-            if "ruleIDs" in computer['intrusionPrevention']:
-                metric = len(computer['intrusionPrevention']['ruleIDs'])
-            else:
-                metric = 0
-
-            # Add a single metric
-            result['Metrics'].append([labels, metric])
-
+    # Add a single metric
+    result['Metrics'].append([['scans'], scans])
+    result['Metrics'].append([['detections'], detections])
+    print(result)
     # Return results
     return result
 

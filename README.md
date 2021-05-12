@@ -13,7 +13,9 @@
 
 Generic API-Collector implemented as a Custom Collector for Prometheus. It supports pluggable collectors and updates at runtime! For this initial version, CounterMetrics are the only metrics supported.
 
-A sample collector to calculate the sky quality forecast for stargazing is provided together with two simple collector examples for Workload Security (counting assigned IPS rules and computers with IPS in prevent mode).
+A sample collector to calculate the sky quality forecast for stargazing is provided together with example collectors for Workload Security and File Storage Security.
+
+![alt text](images/dashboard.png "Grafana Dashboard Example")
 
 ### Collector Template
 

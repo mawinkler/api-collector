@@ -7,5 +7,6 @@
     "registry_email": "spam@cloud.com",
 
     "ws_url": "app.deepsecurity.trendmicro.com:443",
+    "c1_url": "cloudone.trendmicro.com:443",
     "ws_api_key": "<API KEY>"
 }

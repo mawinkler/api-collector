@@ -1,25 +1,4 @@
 {
-  "__inputs": [],
-  "__requires": [
-    {
-      "type": "grafana",
-      "id": "grafana",
-      "name": "Grafana",
-      "version": "7.5.5"
-    },
-    {
-      "type": "panel",
-      "id": "graph",
-      "name": "Graph",
-      "version": ""
-    },
-    {
-      "type": "panel",
-      "id": "stat",
-      "name": "Stat",
-      "version": ""
-    }
-  ],
   "annotations": {
     "list": [
       {
@@ -36,16 +15,97 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": null,
+  "id": 26,
   "links": [],
   "panels": [
+    {
+      "collapsed": true,
+      "datasource": null,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 9,
+      "panels": [],
+      "title": "File Storage Security",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "displayLabels": [
+          "percent"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(fss_detection_statistics_total) by (statistic)",
+          "interval": "",
+          "legendFormat": "{{statistic}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "FSS Daily Malware Findings vs. Scans",
+      "type": "piechart"
+    },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": null,
-      "description": "1 - excellent,\n2 - good,\n3 - fair,\n4 - poor,\n5 - bad",
+      "description": "",
       "fieldConfig": {
         "defaults": {},
         "overrides": []
@@ -53,13 +113,13 @@
       "fill": 5,
       "fillGradient": 5,
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 0,
-        "y": 0
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 1
       },
       "hiddenSeries": false,
-      "id": 2,
+      "id": 13,
       "legend": {
         "avg": false,
         "current": false,
@@ -71,7 +131,7 @@
       },
       "lines": true,
       "linewidth": 1,
-      "nullPointMode": "null",
+      "nullPointMode": "null as zero",
       "options": {
         "alertThreshold": true
       },
@@ -87,36 +147,17 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "astroweather_total{timepoint=\"21:00\",init=\"\"}",
-          "instant": false,
+          "expr": "sum(fss_detection_statistics_total{statistic=\"detections\"}) / sum(fss_detection_statistics_total{statistic=\"scans\"})",
           "interval": "",
-          "legendFormat": "9pm",
+          "legendFormat": "Percentage",
           "refId": "A"
-        },
-        {
-          "exemplar": true,
-          "expr": "astroweather_total{timepoint=\"00:00\",init=\"\"}",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "legendFormat": "12am",
-          "refId": "B"
-        },
-        {
-          "exemplar": true,
-          "expr": "astroweather_total{timepoint=\"03:00\",init=\"\"}",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "legendFormat": "3am",
-          "refId": "C"
         }
       ],
       "thresholds": [],
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "AstroWeather Forecast",
+      "title": "Malware Discovery Percentage",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -132,12 +173,11 @@
       },
       "yaxes": [
         {
-          "decimals": null,
-          "format": "short",
+          "format": "percentunit",
           "label": null,
           "logBase": 1,
-          "max": "5",
-          "min": "1",
+          "max": null,
+          "min": null,
           "show": true
         },
         {
@@ -155,12 +195,26 @@
       }
     },
     {
+      "collapsed": false,
       "datasource": null,
-      "description": "1 - excellent,\n2 - good,\n3 - fair,\n4 - poor,\n5 - bad",
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Workload Security",
+      "type": "row"
+    },
+    {
+      "datasource": null,
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
           },
           "mappings": [],
           "thresholds": {
@@ -180,17 +234,24 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 9,
-        "w": 12,
-        "x": 12,
-        "y": 0
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 10
       },
-      "id": 4,
+      "id": 10,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
+        "displayLabels": [
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
         "reduceOptions": {
           "calcs": [
             "lastNotNull"
@@ -198,24 +259,221 @@
           "fields": "",
           "values": false
         },
-        "text": {},
-        "textMode": "auto"
+        "text": {}
       },
       "pluginVersion": "7.5.5",
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(astroweather_total{init=\"\"}) / 3",
+          "expr": "sum(ws_computers_ips_rules_count_total) by (agentStatus)",
           "interval": "",
-          "legendFormat": "",
+          "legendFormat": "{{agentStatus}}",
           "refId": "A"
         }
       ],
-      "title": "Sky Quality",
-      "type": "stat"
+      "title": "Agent Status",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 10
+      },
+      "id": 11,
+      "options": {
+        "displayLabels": [
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_computers_ips_rules_count_total) by (updateStatus)",
+          "interval": "",
+          "legendFormat": "{{updateStatus}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Agent Update Status",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 16,
+        "y": 10
+      },
+      "id": 5,
+      "options": {
+        "displayLabels": [
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_computers_ips_rules_count_total{agentVersion!=\"0.0.0.0\"}) by (agentVersion)",
+          "interval": "",
+          "legendFormat": "{{agentVersion}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Agent Versions",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      },
+      "id": 4,
+      "options": {
+        "displayLabels": [
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "percent"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_computers_ips_rules_count_total) by (platform)",
+          "interval": "",
+          "legendFormat": "{{platform}}",
+          "refId": "A"
+        }
+      ],
+      "title": "IPS Rules by Platform",
+      "type": "piechart"
     }
   ],
-  "refresh": "1m",
+  "refresh": "30s",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -223,12 +481,12 @@
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
-  "title": "AstroWeather",
-  "uid": "gPBtfoCGk",
-  "version": 4
+  "title": "Cloud One",
+  "uid": "xrb7NxCMz",
+  "version": 13
 }
