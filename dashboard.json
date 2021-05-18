@@ -265,7 +265,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(ws_computers_ips_rules_count_total) by (agentStatus)",
+          "expr": "count(ws_computers_ips_rules_count_total) by (agentStatus)",
           "interval": "",
           "legendFormat": "{{agentStatus}}",
           "refId": "A"
@@ -331,7 +331,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(ws_computers_ips_rules_count_total) by (updateStatus)",
+          "expr": "count(ws_computers_ips_rules_count_total) by (updateStatus)",
           "interval": "",
           "legendFormat": "{{updateStatus}}",
           "refId": "A"
@@ -397,7 +397,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(ws_computers_ips_rules_count_total{agentVersion!=\"0.0.0.0\"}) by (agentVersion)",
+          "expr": "count(ws_computers_ips_rules_count_total{agentVersion!=\"0.0.0.0\"}) by (agentVersion)",
           "interval": "",
           "legendFormat": "{{agentVersion}}",
           "refId": "A"
@@ -433,7 +433,7 @@
       },
       "gridPos": {
         "h": 8,
-        "w": 8,
+        "w": 12,
         "x": 0,
         "y": 18
       },
@@ -471,6 +471,67 @@
       ],
       "title": "IPS Rules by Platform",
       "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 18
+      },
+      "id": 14,
+      "options": {
+        "displayMode": "gradient",
+        "orientation": "horizontal",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_computers_ips_rules_count_total) by (platform)",
+          "interval": "",
+          "legendFormat": "{{platform}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "IPS Rules by Platform",
+      "type": "bargauge"
     }
   ],
   "refresh": "30s",
@@ -481,12 +542,12 @@
     "list": []
   },
   "time": {
-    "from": "now-15m",
+    "from": "now-6h",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "Cloud One",
   "uid": "xrb7NxCMz",
-  "version": 13
+  "version": 19
 }
