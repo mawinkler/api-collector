@@ -265,7 +265,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "count(ws_computers_ips_rules_count_total) by (agentStatus)",
+          "expr": "count(ws_ips_total{arribute=\"info\"}) by (agentStatus)",
           "interval": "",
           "legendFormat": "{{agentStatus}}",
           "refId": "A"
@@ -331,7 +331,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "count(ws_computers_ips_rules_count_total) by (updateStatus)",
+          "expr": "count(ws_ips_total{arribute=\"info\"}) by (updateStatus)",
           "interval": "",
           "legendFormat": "{{updateStatus}}",
           "refId": "A"
@@ -427,14 +427,148 @@
                 "value": 80
               }
             ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 0,
+        "y": 18
+      },
+      "id": 16,
+      "options": {
+        "displayLabels": [
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_ips_total{arribute=\"type_vulnerability\"}) by (platform) != 0",
+          "interval": "",
+          "legendFormat": "{{platform}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Protected Vulnerabilities by Platform",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 8,
+        "x": 8,
+        "y": 18
+      },
+      "id": 15,
+      "options": {
+        "displayLabels": [
+          "value"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": []
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {}
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_ips_total{arribute=\"type_exploit\"}) by (platform) != 0",
+          "interval": "",
+          "legendFormat": "{{platform}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Protected Exploits by Platform",
+      "type": "piechart"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
           }
         },
         "overrides": []
       },
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
+        "w": 8,
+        "x": 16,
         "y": 18
       },
       "id": 4,
@@ -463,7 +597,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(ws_computers_ips_rules_count_total) by (platform)",
+          "expr": "sum(ws_ips_total{arribute=\"rule_count\"}) by (platform) != 0",
           "interval": "",
           "legendFormat": "{{platform}}",
           "refId": "A"
@@ -501,8 +635,71 @@
       "gridPos": {
         "h": 8,
         "w": 12,
+        "x": 0,
+        "y": 26
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "text": {},
+        "textMode": "auto"
+      },
+      "pluginVersion": "7.5.5",
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(ws_ips_total{arribute=\"info\"}) by (cloud_provider)",
+          "interval": "",
+          "legendFormat": "{{platform}}",
+          "refId": "A"
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "Cloud Provider Instance Count",
+      "type": "stat"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
         "x": 12,
-        "y": 18
+        "y": 26
       },
       "id": 14,
       "options": {
@@ -522,7 +719,7 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(ws_computers_ips_rules_count_total) by (platform)",
+          "expr": "sum(ws_ips_total{arribute=\"rule_count\"}) by (platform) != 0",
           "interval": "",
           "legendFormat": "{{platform}}",
           "refId": "A"
@@ -530,11 +727,11 @@
       ],
       "timeFrom": null,
       "timeShift": null,
-      "title": "IPS Rules by Platform",
+      "title": "IPS Rule Count by Platform",
       "type": "bargauge"
     }
   ],
-  "refresh": "30s",
+  "refresh": "5s",
   "schemaVersion": 27,
   "style": "dark",
   "tags": [],
@@ -549,5 +746,5 @@
   "timezone": "",
   "title": "Cloud One",
   "uid": "xrb7NxCMz",
-  "version": 19
+  "version": 24
 }
