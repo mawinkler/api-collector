@@ -1,4 +1,4 @@
-"""Example metrics collector for Workload Security
+"""Example metrics collector for File Storage Security
 
 This script is a pluggable module for the api-collector. It collects
 information from File Storage Security by it's RESTful API, calculates some
@@ -14,8 +14,10 @@ credentials in the given directory.
 import json
 import requests
 import logging
+import pprint
 from datetime import datetime, timedelta
 
+# Constants
 _LOGGER = logging.getLogger(__name__)
 
 def collect() -> dict:
@@ -47,8 +49,8 @@ def collect() -> dict:
 
     # Define your metrics here
     result = {
-        "CounterMetricFamilyName": "fss_detection_statistics",
-        "CounterMetricFamilyHelpText": "File Storage Daily Detection Statistics",
+        "CounterMetricFamilyName": "fss_statistics",
+        "CounterMetricFamilyHelpText": "File Storage Daily Statistics",
         "CounterMetricFamilyLabels": ['statistic'],
         "Metrics": []
     }
@@ -75,7 +77,7 @@ def collect() -> dict:
         if response['message'] == "Invalid API Key":
             raise ValueError("Invalid API Key")
 
-    # Calculate your metrics
+    # Calculate scan and detection metrics
     scans = 0
     detections = 0
     if len(response['statistics']) > 0:
@@ -83,11 +85,40 @@ def collect() -> dict:
             scans += statistic['scans']
             detections += statistic['detections']
 
-    # Add a single metric
+    # Add metrics
     result['Metrics'].append([['scans'], scans])
     result['Metrics'].append([['detections'], detections])
-    print(result)
+
+    url = "https://" + c1_url + "/api/filestorage/stacks" 
+    post_header = {
+        "Content-Type": "application/json",
+        "api-secret-key": api_key,
+        "api-version": "v1",
+    }
+    response = requests.get(
+        url, headers=post_header, verify=True
+    ).json()
+
+    # Error handling
+    if "message" in response:
+        if response['message'] == "Invalid API Key":
+            raise ValueError("Invalid API Key")
+
+    scanner_stacks = 0
+    storage_stacks = 0
+    if len(response['stacks']) > 0:
+        for stack in response['stacks']:
+            if stack['type'] == "scanner":
+                scanner_stacks += 1
+            if stack['type'] == "storage":
+                storage_stacks += 1
+            
+    # Add metrics
+    result['Metrics'].append([['scanner_stacks'], scanner_stacks])
+    result['Metrics'].append([['storage_stacks'], storage_stacks])
+
     # Return results
+    pprint.pprint(result)
     return result
 
 if __name__ == '__main__':
