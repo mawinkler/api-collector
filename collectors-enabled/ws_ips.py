@@ -171,6 +171,7 @@ def collect() -> dict:
             type_vulnerability = 0
             type_exploit = 0
 
+            # Count severities and rule types
             if "ruleIDs" in computer['intrusionPrevention']:
                 rule_count = len(computer['intrusionPrevention']['ruleIDs'])
                 for ruleId in computer['intrusionPrevention']['ruleIDs']:
@@ -187,10 +188,10 @@ def collect() -> dict:
                         type_vulnerability += 1
                     if rules_dict[ruleId]['type'] == "exploit":
                         type_exploit += 1
-            else:
-                metric = 0
 
-            labels= []
+            labels = []
+
+            # Location
             if "gcpVirtualMachineSummary" in computer:
                 labels.append("GCP")
                 labels.append(computer['gcpVirtualMachineSummary']['state'].title())
@@ -204,14 +205,18 @@ def collect() -> dict:
             else:
                 labels.append("On-Prem")
                 labels.append(computer['computerStatus']['agentStatus'].title())
+
             labels.append(computer['platform'])
+
             if 'securityUpdates' in computer:
                 labels.append(computer['securityUpdates']['updateStatus']['statusMessage'])
             else:
                 labels.append("Unmanaged")
+
             labels.append(computer['agentVersion'])
             labels.append(computer['displayName'])
 
+            # Specific metrics
             attlabels = labels[:]
             attlabels.append("info")
             result['Metrics'].append([attlabels, 1])
