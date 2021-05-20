@@ -14,7 +14,6 @@ credentials in the given directory.
 import json
 import requests
 import logging
-import pprint
 
 # Constants
 _RESULT_SET_SIZE = 5000
@@ -88,14 +87,13 @@ def create_rules_dict(ws_url, api_key) -> dict:
 
         if len(rule) != 0 and len(rule) == dict_len:
             dict_len = len(rule)
-            _LOGGER.info("Number of rules in dictionary: {}.".format(dict_len))
             break
         if len(rule) != 0 and len(rule) != dict_len:
             dict_len = len(rule)
 
         offset += _RESULT_SET_SIZE
 
-    print(len(result))
+    _LOGGER.debug("Count of IPS rules in dictionary: {}".format(len(result)))
     return result
 
 def collect() -> dict:
@@ -136,8 +134,7 @@ def collect() -> dict:
             'updateStatus',
             'agentVersion',
             'displayName',
-            'arribute',
-            'info'],
+            'arribute'],
         "Metrics": []
     }
 
@@ -156,7 +153,10 @@ def collect() -> dict:
     # Error handling
     if "message" in response:
         if response['message'] == "Invalid API Key":
+            _LOGGER.error("API error: {}".format(response['message']))
             raise ValueError("Invalid API Key")
+
+    _LOGGER.debug("Computer listing received")
 
     rules_dict = create_rules_dict(ws_url, api_key)
 
@@ -250,7 +250,7 @@ def collect() -> dict:
             result['Metrics'].append([attlabels, type_exploit])
 
     # Return results
-    pprint.pprint(result)
+    _LOGGER.debug("Metrics collected: {}".format(result))
     return result
 
 if __name__ == '__main__':

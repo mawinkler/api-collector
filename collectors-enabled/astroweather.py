@@ -73,7 +73,10 @@ def collect() -> dict:
     # Error handling
     if "message" in response:
         if response['message'] == "Invalid API Key":
+            _LOGGER.error("API error: {}".format(response['message']))
             raise ValueError("Invalid API Key")
+
+    _LOGGER.debug("Astroweather forecast received")
 
     # Timezone Offset is currently calculated based on system time
     offset = time.timezone if (time.localtime().tm_isdst == 0) else time.altzone
@@ -113,7 +116,7 @@ def collect() -> dict:
             # Add a single metric
             result['Metrics'].append([labels, metric])
 
-    _LOGGER.debug(result)
+    _LOGGER.debug("Metrics collected: {}".format(result))
     # Return results
     return result
 

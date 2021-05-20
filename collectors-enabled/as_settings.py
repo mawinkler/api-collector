@@ -14,7 +14,6 @@ credentials in the given directory.
 import json
 import requests
 import logging
-import pprint
 from datetime import datetime, timedelta
 
 # Constants
@@ -54,10 +53,7 @@ def collect() -> dict:
         "CounterMetricFamilyLabels": ['name', 'setting'],
         "Metrics": []
     }
-    # setting can be
-    # 0 - disable
-    # 1 - report
-    # 2 - mitigate
+
     setting_table = {
         "disable": 0,
         "report": 1,
@@ -78,7 +74,10 @@ def collect() -> dict:
     # Error handling
     if "message" in response:
         if response['message'] == "Invalid API Key":
+            _LOGGER.error("API error: {}".format(response['message']))
             raise ValueError("Invalid API Key")
+
+    _LOGGER.debug("Application Security groups received")
 
     # Calculate metrics
     if len(response) > 0:
@@ -126,8 +125,12 @@ def collect() -> dict:
                 attlabels.append("sqli")
                 result['Metrics'].append([attlabels, setting_table[group['settings']['sqli']]])
 
+            attlabels = labels[:]
+            attlabels.append("info")
+            result['Metrics'].append([attlabels, 1])
+
     # Return results
-    pprint.pprint(result)
+    _LOGGER.debug("Metrics collected: {}".format(result))
     return result
 
 if __name__ == '__main__':

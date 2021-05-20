@@ -14,7 +14,6 @@ credentials in the given directory.
 import json
 import requests
 import logging
-import pprint
 from datetime import datetime, timedelta
 
 # Constants
@@ -75,7 +74,10 @@ def collect() -> dict:
     # Error handling
     if "message" in response:
         if response['message'] == "Invalid API Key":
+            _LOGGER.error("API error: {}".format(response['message']))
             raise ValueError("Invalid API Key")
+
+    _LOGGER.debug("File Storage Security statistics received")
 
     # Calculate scan and detection metrics
     scans = 0
@@ -102,6 +104,7 @@ def collect() -> dict:
     # Error handling
     if "message" in response:
         if response['message'] == "Invalid API Key":
+            _LOGGER.error("API error: {}".format(response['message']))
             raise ValueError("Invalid API Key")
 
     scanner_stacks = 0
@@ -118,7 +121,7 @@ def collect() -> dict:
     result['Metrics'].append([['storage_stacks'], storage_stacks])
 
     # Return results
-    pprint.pprint(result)
+    _LOGGER.debug("Metrics collected: {}".format(result))
     return result
 
 if __name__ == '__main__':
