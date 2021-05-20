@@ -5,15 +5,13 @@
     - [Collector Template](#collector-template)
   - [Quick Start](#quick-start)
   - [Example Queries](#example-queries)
-    - [Prometheus](#prometheus)
-    - [Grafana](#grafana)
   - [Tricks](#tricks)
 
 ## About
 
 Generic API-Collector implemented as a Custom Collector for Prometheus. It supports pluggable collectors and updates at runtime! For this initial version, CounterMetrics are the only metrics supported.
 
-A sample collector to calculate the sky quality forecast for stargazing is provided together with example collectors for Workload Security and File Storage Security.
+A sample collector to calculate the sky quality forecast for stargazing is provided together with example collectors for Workload Security, File Storage and Application Security.
 
 ![alt text](images/dashboard.png "Grafana Dashboard Example")
 
@@ -21,7 +19,9 @@ A sample collector to calculate the sky quality forecast for stargazing is provi
 
 Below, a collector template is shown. They must all be located inside the `collectors-enabled` directory to be deployed.
 
-The general structure is as shown below:
+> Note: If you follow the Prometheus configuration shown below, you need to ensure that a full collector run does not take longer than 30s, since the `scrape_timeout` is set to this timeout.
+
+The general structure of a collector is as shown below:
 
 ```py
 def collect() -> dict:
@@ -63,13 +63,22 @@ def collect() -> dict:
             labels.append(str(attribute2))
             metric = calculated_result
 
-            # Add a single metric
+            # Add a metric
             result['Metrics'].append([labels, metric])
 
     # Return results
+    _LOGGER.debug("Metrics collected: {}".format(result))
     return result
 ```
 
+Within the repo, the following collectors are provided as examples:
+
+- `astroweather.py` - calculates the night sky quality of the night sky (might be useful for stargazers)
+- `ws_ips.py` - calculates metrics for IPS module of Workload Security
+- `fss_statistics.py` - gathers some statistical data from File Storage Security
+- `as_settings.py` - queries the security seetings of Application Security groups
+
+Within the repo is a `dashboard.json` which you can import to your Grafana instance.
 ## Quick Start
 
 > This quick start uses Workload Security as an example.
@@ -90,12 +99,16 @@ def collect() -> dict:
         additionalScrapeConfigs:
         - job_name: api-collector
           scrape_interval: 60s
+          scrape_timeout: 30s
+          scheme: http
           metrics_path: /
           static_configs:
           - targets: ['api-collector:8000']
     ```
 
-    Below, an example for a full deployment is shown. For simplicity, you can use the [c1-playground](https://github.com/mawinkler/c1-playground) run the script `deploy-prometheus-grafana.sh`. Otherwise execute the following to deploy Prometheus and Grafana on your cluster.
+    Below, an example for a full deployment is shown. For simplicity, you can use the [c1-playground](https://github.com/mawinkler/c1-playground) and run the script `deploy-prometheus-grafana.sh` after you provisiond the cluster with `up.sh`.
+    
+    If you want to deploy Prometheus and Grafana manually, execute the following steps to deploy both on your cluster.
 
     ```sh
     kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
@@ -117,7 +130,9 @@ def collect() -> dict:
       prometheusSpec:
         additionalScrapeConfigs:
         - job_name: api-collector
-          scrape_interval: 10s
+          scrape_interval: 60s
+          scrape_timeout: 30s
+          scheme: http
           metrics_path: /
           static_configs:
           - targets: ['api-collector:8000']
@@ -135,7 +150,7 @@ def collect() -> dict:
       prometheus-community/kube-prometheus-stack
     ```
 
-3. Run Deploy
+3. Run Deploy to deploy the api-collector
 
     ```sh
     ./deploy.sh
@@ -144,17 +159,20 @@ def collect() -> dict:
 4. The Workload Security collectors do require a secret to work properly. Create it with
 
     ```sh
+    NAMESPACE="$(jq -r '.namespace' config.json)"
     WS_URL="$(jq -r '.ws_url' config.json)"
+    C1_URL="$(jq -r '.c1_url' config.json)"
     WS_API_KEY="$(jq -r '.ws_api_key' config.json)"
 
     # create workload security secret
-    kubectl -n prometheus create secret generic workload-security \
+    kubectl -n ${NAMESPACE} create secret generic workload-security \
         --from-literal=ws_url=${WS_URL} \
+        --from-literal=c1_url=${C1_URL} \
         --from-literal=api_key=${WS_API_KEY} \
         --dry-run=client -o yaml | kubectl apply -f -
 
     # create workload security secret volume mount
-    kubectl -n prometheus patch deployment api-collector --patch "
+    kubectl -n ${NAMESPACE} patch deployment api-collector --patch "
     spec:
       template:
         spec:
@@ -176,42 +194,32 @@ def collect() -> dict:
     ./deploy-collectors.sh
     ```
 
-6. You should now be able to query prometheus with `PromQL`.
+You should now be able to query prometheus with `PromQL`.
 
 ## Example Queries
 
-### Prometheus
-
-Query the total number of assigned IPS rules
+Query the amount of instances within the major public clouds
 
 ```PromQL
-sum by (job) (ws_computers_ips_rules_count_total)
+sum(ws_ips_total{arribute="info"}) by (cloud_provider)
 ```
 
-Query the percentage of computers with IPS mode set to prevent
+Query the amount of protected exploits by grouping to the platform
 
 ```PromQL
-sum by (job) (ws_computers_ips_mode_prevent_total) / (count by (job)(ws_computers_ips_mode_prevent_total))
+sum(ws_ips_total{arribute="type_exploit"}) by (platform) != 0
 ```
 
-### Grafana
+Query the amount of assigned ips rules by platform
 
-Display the sky quality for tonights star gazing
-
-```Grafana
-sum(astroweather_total) / 3
+```PromQL
+sum(ws_ips_total{arribute="rule_count"}) by (platform) != 0
 ```
 
-1 - excellent,
-2 - good,
-3 - fair,
-4 - poor,
-5 - bad
+Calculate the percentage of malware detections by FSS scans
 
-Query the percentage of computers with IPS mode set to prevent
-
-```Grafana
-sum(ws_computers_ips_mode_prevent_total{job="api-collector"}) / (count(ws_computers_ips_mode_prevent_total{job="api-collector"}))
+```PromQL
+sum(fss_statistics_total{statistic="detections"}) / sum(fss_statistics_total{statistic="scans"}) * 100
 ```
 
 ## Tricks
@@ -235,5 +243,5 @@ kubectl exec -it -n prometheus $(kubectl -n prometheus get pods -o json | jq -r 
 Logs of the api-collector
 
 ```sh
-kubectl -n prometheus logs $(kubectl -n prometheus get pods -o json | jq -r '.items[].metadata | select(.name | startswith("api-collector")) | .name')
+kubectl -n prometheus logs -f $(kubectl -n prometheus get pods -o json | jq -r '.items[].metadata | select(.name | startswith("api-collector")) | .name')
 ```
