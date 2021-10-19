@@ -26,8 +26,8 @@ The general structure of a collector is as shown below:
 ```py
 def collect() -> dict:
 
-    url=open('/etc/mysecrets/url', 'r').read()
-    secret=open('/etc/mysecrets/secret', 'r').read()
+    url = open('/etc/mysecrets/url', 'r').read()[:-1]
+    api_key = open('/etc/mysecrets/api_key', 'r').read()[:-1]
 
     # Define your metrics here
     result = {
@@ -42,7 +42,7 @@ def collect() -> dict:
     data = {}
     post_header = {
         "Content-type": "application/json",
-        "api-secret-key": secret,
+        "Authorization": "ApiKey " + api_key,
         "api-version": "v1",
     }
     response = requests.get(
@@ -79,17 +79,26 @@ Within the repo, the following collectors are provided as examples:
 - `as_settings.py` - queries the security seetings of Application Security groups
 
 Within the repo is a `dashboard.json` which you can import to your Grafana instance.
+
 ## Quick Start
 
 > This quick start uses Workload Security as an example.
 
-1. Create a config.json
+1. Create a api endpoint url and api key configuration.
 
     ```sh
-    cp config.json.sample config.json
+    $ sudo bash -c 'echo "us-1.cloudone.trendmicro.com" > /etc/cloudone-credentials/c1_url'
+    $ sudo bash -c 'echo "<YOUR CLOUD ONE API KEY>" > /etc/cloudone-credentials/api_key'
+    $ sudo bash -c 'echo "<YOUR WORKLOAD SECURITY API KEY>" > /etc/cloudone-credentials/ws_key'
     ```
 
-    and adapt it to your environment
+    Create a config.json
+
+    ```sh
+    $ cp config.json.sample config.json
+    ```
+
+    and adapt it to your environment.
 
 2. Configure the overrides for your Prometheus deployment to query the api-collector. In a default Prometheus installation, the api-collector and it's components need to run within the prometheus namespace.
 
@@ -107,26 +116,34 @@ Within the repo is a `dashboard.json` which you can import to your Grafana insta
     ```
 
     Below, an example for a full deployment is shown. For simplicity, you can use the [c1-playground](https://github.com/mawinkler/c1-playground) and run the script `deploy-prometheus-grafana.sh` after you provisiond the cluster with `up.sh`.
-    
+
     If you want to deploy Prometheus and Grafana manually, execute the following steps to deploy both on your cluster.
 
     ```sh
-    kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
+    $ kubectl create namespace prometheus --dry-run=client -o yaml | kubectl apply -f -
 
-    cat <<EOF >overrides/overrides-prometheus.yml
+    $ cat <<EOF >overrides/overrides-prometheus.yml
     grafana:
       enabled: true
-      adminPassword: operator
+      adminPassword: ${GRAFANA_PASSWORD}
       service:
-        type: LoadBalancer
+        type: ${SERVICE_TYPE}
     prometheusOperator:
       enabled: true
       service:
-        type: LoadBalancer
+        type: ${SERVICE_TYPE}
+      namespaces:
+        releaseNamespace: true
+        additional:
+        - kube-system
+        - smartcheck
+        - container-security
+        - registry
+        - falco
     prometheus:
       enabled: true
       service:
-        type: LoadBalancer
+        type: ${SERVICE_TYPE}
       prometheusSpec:
         additionalScrapeConfigs:
         - job_name: api-collector
@@ -153,45 +170,19 @@ Within the repo is a `dashboard.json` which you can import to your Grafana insta
 3. Run Deploy to deploy the api-collector
 
     ```sh
-    ./deploy.sh
+    $ ./deploy.sh
     ```
 
 4. The Workload Security collectors do require a secret to work properly. Create it with
 
     ```sh
-    NAMESPACE="$(jq -r '.namespace' config.json)"
-    WS_URL="$(jq -r '.ws_url' config.json)"
-    C1_URL="$(jq -r '.c1_url' config.json)"
-    WS_API_KEY="$(jq -r '.ws_api_key' config.json)"
-
-    # create workload security secret
-    kubectl -n ${NAMESPACE} create secret generic workload-security \
-        --from-literal=ws_url=${WS_URL} \
-        --from-literal=c1_url=${C1_URL} \
-        --from-literal=api_key=${WS_API_KEY} \
-        --dry-run=client -o yaml | kubectl apply -f -
-
-    # create workload security secret volume mount
-    kubectl -n ${NAMESPACE} patch deployment api-collector --patch "
-    spec:
-      template:
-        spec:
-          containers:
-            - name: api-collector
-              volumeMounts:
-              - name: workload-security-credentials
-                mountPath: "/etc/workload-security-credentials"
-          volumes:
-            - name: workload-security-credentials
-              secret:
-                secretName: workload-security
-    "
+    $ ./create_secret.sh
     ```
 
 5. Now, inject the sample collectors to the running api-collector
 
     ```sh
-    ./deploy-collectors.sh
+    $ ./deploy-collectors.sh
     ```
 
 You should now be able to query prometheus with `PromQL`.

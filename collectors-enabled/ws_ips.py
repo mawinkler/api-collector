@@ -13,13 +13,17 @@ credentials in the given directory.
 
 import json
 import requests
+import sys
 import logging
 
 # Constants
 _RESULT_SET_SIZE = 5000
 _LOGGER = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s (%(threadName)s) [%(funcName)s] %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
-def create_rules_dict(ws_url, api_key) -> dict:
+def create_rules_dict(c1_url, api_key) -> dict:
     """
     Build a dictionary of IPS rules and some of their attributes
     
@@ -52,7 +56,7 @@ def create_rules_dict(ws_url, api_key) -> dict:
     while True:
 
         # API query and response parsing here
-        url = "https://" + ws_url + "/api/intrusionpreventionrules/search"
+        url = "https://workload." + c1_url + "/api/intrusionpreventionrules/search"
         data = {
             "maxItems": _RESULT_SET_SIZE,
             "searchCriteria": [
@@ -120,8 +124,10 @@ def collect() -> dict:
     """
 
     # API credentials are mounted to /etc
-    ws_url=open('/etc/workload-security-credentials/ws_url', 'r').read()
-    api_key=open('/etc/workload-security-credentials/api_key', 'r').read()
+    c1_url = open('/etc/cloudone-credentials/c1_url', 'r').read().rstrip('\n')
+    api_key = open('/etc/cloudone-credentials/ws_key', 'r').read().rstrip('\n')
+
+    _LOGGER.debug("Cloud One API endpoint: {}".format(c1_url))
 
     # Define your metrics here
     result = {
@@ -139,7 +145,7 @@ def collect() -> dict:
     }
 
     # API query and response parsing here
-    url = "https://" + ws_url + "/api/computers"
+    url = "https://workload." + c1_url + "/api/computers"
     data = {}
     post_header = {
         "Content-type": "application/json",
@@ -158,7 +164,7 @@ def collect() -> dict:
 
     _LOGGER.debug("Computer listing received")
 
-    rules_dict = create_rules_dict(ws_url, api_key)
+    rules_dict = create_rules_dict(c1_url, api_key)
 
     # Calculate your metrics
     if len(response['computers']) > 0:

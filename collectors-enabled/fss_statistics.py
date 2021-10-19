@@ -14,10 +14,14 @@ credentials in the given directory.
 import json
 import requests
 import logging
+import sys
 from datetime import datetime, timedelta
 
 # Constants
 _LOGGER = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s (%(threadName)s) [%(funcName)s] %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 def collect() -> dict:
     """
@@ -43,8 +47,8 @@ def collect() -> dict:
     """
 
     # API credentials are mounted to /etc
-    c1_url=open('/etc/workload-security-credentials/c1_url', 'r').read()
-    api_key=open('/etc/workload-security-credentials/api_key', 'r').read()
+    c1_url = open('/etc/cloudone-credentials/c1_url', 'r').read().rstrip('\n')
+    api_key = open('/etc/cloudone-credentials/api_key', 'r').read().rstrip('\n')
 
     # Define your metrics here
     result = {
@@ -59,12 +63,12 @@ def collect() -> dict:
     interval = "1h"
 
     # API query and response parsing here
-    url = "https://" + c1_url + "/api/filestorage/statistics/scans?from=" \
+    url = "https://filestorage." + c1_url + "/api/statistics/scans?from=" \
         + startTime + "&to=" \
         + endTime + "&interval=" + interval
     post_header = {
         "Content-Type": "application/json",
-        "api-secret-key": api_key,
+        "Authorization": "ApiKey " + api_key,
         "api-version": "v1",
     }
     response = requests.get(
@@ -91,10 +95,10 @@ def collect() -> dict:
     result['Metrics'].append([['scans'], scans])
     result['Metrics'].append([['detections'], detections])
 
-    url = "https://" + c1_url + "/api/filestorage/stacks" 
+    url = "https://filestorage." + c1_url + "/api/stacks" 
     post_header = {
         "Content-Type": "application/json",
-        "api-secret-key": api_key,
+        "Authorization": "ApiKey " + api_key,
         "api-version": "v1",
     }
     response = requests.get(

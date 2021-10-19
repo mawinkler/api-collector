@@ -57,38 +57,41 @@ class CustomCollector():
         _LOGGER.info("Starting Collector Run")
 
         for collector in glob.glob("collectors/*.py"):
-            # convert the script file name into it's module name
-            # (hoping it doesn't contain any spaces or dash characters)
-            module_name = "." + os.path.basename(collector).replace('.py', '')
+            try:
+                # convert the script file name into it's module name
+                # (hoping it doesn't contain any spaces or dash characters)
+                module_name = "." + os.path.basename(collector).replace('.py', '')
 
-            _LOGGER.info("Running collector {}".format(collector))
+                _LOGGER.info("Running collector {}".format(collector))
 
-            # import the module of that name
-            module = importlib.import_module(module_name, 'collectors')
+                # import the module of that name
+                module = importlib.import_module(module_name, 'collectors')
 
-            # get it's parameter names
-            args = inspect.signature(module.collect).parameters
+                # get it's parameter names
+                args = inspect.signature(module.collect).parameters
 
-            # construct a dictionary with these names as keys and the
-            # instance of the API abstraction class, as the value
-            kwargs = {}
-            for name in args:
-                kwargs[name] = get_service_instance(name)
+                # construct a dictionary with these names as keys and the
+                # instance of the API abstraction class, as the value
+                kwargs = {}
+                for name in args:
+                    kwargs[name] = get_service_instance(name)
 
-            # call module.collect and store the return value in response
-            response = module.collect(**kwargs)
+                # call module.collect and store the return value in response
+                response = module.collect(**kwargs)
 
-            cmf = CounterMetricFamily(response['CounterMetricFamilyName'],
-                                      response['CounterMetricFamilyHelpText'],
-                                      labels=response['CounterMetricFamilyLabels'])
+                cmf = CounterMetricFamily(response['CounterMetricFamilyName'],
+                                        response['CounterMetricFamilyHelpText'],
+                                        labels=response['CounterMetricFamilyLabels'])
 
-            _LOGGER.info("Metrics from collector {} received: {} ".format(collector, len(response["Metrics"])))
+                _LOGGER.info("Metrics from collector {} received: {} ".format(collector, len(response["Metrics"])))
 
-            # loop over the the metrics reported
-            for metric in response["Metrics"]:
-                cmf.add_metric(metric[0], metric[1])
+                # loop over the the metrics reported
+                for metric in response["Metrics"]:
+                    cmf.add_metric(metric[0], metric[1])
 
-            yield cmf
+                yield cmf
+            except BaseException as err:
+                _LOGGER.error(f"Unexpected {err=}, {type(err)=}")
 
         _LOGGER.info("Collector Run finished")
 

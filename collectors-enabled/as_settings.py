@@ -14,10 +14,14 @@ credentials in the given directory.
 import json
 import requests
 import logging
+import sys
 from datetime import datetime, timedelta
 
 # Constants
 _LOGGER = logging.getLogger(__name__)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
+                    format='%(asctime)s %(levelname)s (%(threadName)s) [%(funcName)s] %(message)s',
+                    datefmt='%Y-%m-%d %H:%M:%S')
 
 def collect() -> dict:
     """
@@ -43,8 +47,10 @@ def collect() -> dict:
     """
 
     # API credentials are mounted to /etc
-    c1_url=open('/etc/workload-security-credentials/c1_url', 'r').read()
-    api_key=open('/etc/workload-security-credentials/api_key', 'r').read()
+    c1_url = open('/etc/cloudone-credentials/c1_url', 'r').read().rstrip('\n')
+    api_key = open('/etc/cloudone-credentials/api_key', 'r').read().rstrip('\n')
+
+    _LOGGER.debug("Cloud One API endpoint: {}".format(c1_url))
 
     # Define your metrics here
     result = {
@@ -61,10 +67,10 @@ def collect() -> dict:
     }
 
     # API query and response parsing here
-    url = "https://" + c1_url + "/api/application/accounts/groups"
+    url = "https://application." + c1_url + "/accounts/groups"
     post_header = {
         "Content-Type": "application/json",
-        "api-secret-key": api_key,
+        "Authorization": "ApiKey " + api_key,
         "api-version": "v1",
     }
     response = requests.get(
@@ -77,7 +83,7 @@ def collect() -> dict:
             _LOGGER.error("API error: {}".format(response['message']))
             raise ValueError("Invalid API Key")
 
-    _LOGGER.debug("Application Security groups received")
+    _LOGGER.debug("{} Application Security group(s) received".format(str(len(response))))
 
     # Calculate metrics
     if len(response) > 0:
@@ -85,6 +91,7 @@ def collect() -> dict:
             labels = []
             labels.append(group['name'])
 
+            _LOGGER.debug("{}".format(group['settings']))
             if "credential_stuffing" in group['settings']:
                 attlabels = labels[:]
                 attlabels.append("credential_stuffing")
