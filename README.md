@@ -11,9 +11,18 @@
 
 Generic API-Collector implemented as a Custom Collector for Prometheus. It supports pluggable collectors and updates at runtime! For this initial version, CounterMetrics are the only metrics supported.
 
-A sample collector to calculate the sky quality forecast for stargazing is provided together with example collectors for Workload Security, File Storage and Application Security.
+Sample collectors to calculate the sky quality forecast for stargazing is provided together with  collectors for Workload Security, File Storage, Application Security and Container Security (***new!***).
 
 ![alt text](images/dashboard.png "Grafana Dashboard Example")
+
+- `astroweather.py` - calculates the night sky quality of the night sky (might be useful for stargazers)
+- `ws_ips.py` - calculates metrics for IPS module of Workload Security
+- `ws_ips_rules.py` - metrics for assigned IPS rules
+- `ws_ips_prevent.py` - metrics for the IPS module being in prevent mode
+- `fss_statistics.py` - gathers some statistical data from File Storage Security
+- `as_settings.py` - queries the security seetings of Application Security groups
+- `cs_eps.py` - statistics for Container Security Deploy & Continuous module, trend for the last 60 mins
+- `cs_rsps.py` - statistics for Container Security Runtime Security module, trend for the last 60 mins
 
 ### Collector Template
 
@@ -70,13 +79,6 @@ def collect() -> dict:
     _LOGGER.debug("Metrics collected: {}".format(result))
     return result
 ```
-
-Within the repo, the following collectors are provided as examples:
-
-- `astroweather.py` - calculates the night sky quality of the night sky (might be useful for stargazers)
-- `ws_ips.py` - calculates metrics for IPS module of Workload Security
-- `fss_statistics.py` - gathers some statistical data from File Storage Security
-- `as_settings.py` - queries the security seetings of Application Security groups
 
 Within the repo is a `dashboard.json` which you can import to your Grafana instance.
 

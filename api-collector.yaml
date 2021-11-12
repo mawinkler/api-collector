@@ -30,7 +30,7 @@ spec:
     spec:
       containers:
         - name: api-collector
-          image: ${REGISTRY_HOSTNAME}:${REGISTRY_PORT}/api-collector
+          image: ${REGISTRY_HOSTNAME}/api-collector
           imagePullPolicy: Always
           ports:
           - containerPort: 8000

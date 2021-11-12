@@ -19,10 +19,12 @@
     ]
   },
   "editable": true,
+  "fiscalYearStartMonth": 0,
   "gnetId": null,
   "graphTooltip": 0,
   "id": 26,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
       "collapsed": true,
@@ -124,7 +126,7 @@
         "x": 12,
         "y": 1
       },
-      "id": 49,
+      "id": 52,
       "options": {
         "displayLabels": [
           "name"
@@ -151,13 +153,13 @@
       "targets": [
         {
           "exemplar": true,
-          "expr": "sum(cs_eps_total{decision=\"allow\"}) by (namespace)",
+          "expr": "sum(cs_rsps_total{mitigation=\"log\"}) by (namespace)",
           "interval": "",
           "legendFormat": "{{namespace}}",
           "refId": "A"
         }
       ],
-      "title": "Approvals by Namespace",
+      "title": "Runtime Mitigations by Namespace",
       "type": "piechart"
     },
     {
@@ -301,12 +303,73 @@
         "x": 12,
         "y": 9
       },
-      "id": 51,
+      "id": 53,
       "options": {
         "legend": {
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "sum(cs_rsps_total{mitigation=\"log\"}) by (namespace)",
+          "interval": "",
+          "legendFormat": "{{namespace}}",
+          "refId": "A"
+        }
+      ],
+      "title": "Runtime Mitigations by Namespace",
+      "type": "timeseries"
+    },
+    {
+      "datasource": null,
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 17
+      },
+      "id": 49,
+      "options": {
+        "displayLabels": [
+          "name"
+        ],
+        "legend": {
+          "displayMode": "list",
+          "placement": "right",
+          "values": [
+            "value"
+          ]
+        },
+        "pieType": "donut",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
         "tooltip": {
           "mode": "single"
@@ -322,20 +385,16 @@
         }
       ],
       "title": "Approvals by Namespace",
-      "type": "timeseries"
+      "type": "piechart"
     },
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 17
+        "y": 25
       },
       "id": 33,
       "panels": [
@@ -372,7 +431,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -463,7 +522,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -554,7 +613,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -645,7 +704,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -736,7 +795,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -827,7 +886,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -918,7 +977,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1009,7 +1068,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1100,7 +1159,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1191,7 +1250,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "8.1.5",
+          "pluginVersion": "8.2.1",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -1256,15 +1315,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 18
+        "y": 26
       },
       "id": 21,
       "panels": [
@@ -1396,15 +1451,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 27
       },
       "id": 9,
       "panels": [
@@ -1611,15 +1662,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 28
       },
       "id": 7,
       "panels": [
@@ -2135,15 +2182,11 @@
     {
       "collapsed": true,
       "datasource": null,
-      "fieldConfig": {
-        "defaults": {},
-        "overrides": []
-      },
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 29
       },
       "id": 31,
       "panels": [
@@ -2260,7 +2303,7 @@
     }
   ],
   "refresh": "10s",
-  "schemaVersion": 30,
+  "schemaVersion": 31,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -2274,5 +2317,5 @@
   "timezone": "",
   "title": "Cloud One",
   "uid": "xrb7NxCMz",
-  "version": 5
+  "version": 2
 }

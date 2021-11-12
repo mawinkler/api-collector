@@ -5,9 +5,9 @@ information from Container Security by it's RESTful API, calculates some
 metrics and creates a dictionary which is feeded into Prometheus
 by the api-collector.
 
-Purpose of this collector is to provide metrics, how many evaluation
-events are detected by the deployment and continuous modules of Container
-Security within the last hour.
+Purpose of this collector is to provide metrics, how many runtime security
+events are detected by the runtime security module of Container
+Security within the last minute.
 
 This file has one single funtion collect(), which is called by the
 api-collector. For testing purposes, one can directly run the collector
@@ -19,6 +19,7 @@ import requests
 import logging
 import sys
 from datetime import datetime, timedelta
+import pprint
 
 # Constants
 _LOGGER = logging.getLogger(__name__)
@@ -57,9 +58,9 @@ def collect() -> dict:
 
     # Define your metrics here
     result = {
-        "CounterMetricFamilyName": "cs_eps",
-        "CounterMetricFamilyHelpText": "Container Security Events per Slice",
-        "CounterMetricFamilyLabels": ['clusterName', 'policyName', 'mitigation', 'operation', 'kind', 'namespace', 'decision'],
+        "CounterMetricFamilyName": "cs_rsps",
+        "CounterMetricFamilyHelpText": "Container Security Runtime Events per Slice",
+        "CounterMetricFamilyLabels": ['clusterName', 'policyName', 'pod', 'name', 'mitigation', 'namespace', 'severity'],
         "Metrics": []
     }
 
@@ -76,7 +77,7 @@ def collect() -> dict:
     cursor = ""
     events = []
     while True:
-        url = "https://container." + c1_url + "/api/events/evaluations?" \
+        url = "https://container." + c1_url + "/api/events/sensors?" \
             + "next=" + cursor \
             + "&limit=" + str(25) \
             + "&fromTime=" + start_time \
@@ -121,10 +122,10 @@ def collect() -> dict:
         if cursor == "":
             break
 
-    _LOGGER.debug("{} Container Security reasons received".format(str(len(events))))
+    _LOGGER.debug("{} Container Security runtime events received".format(str(len(events))))
 
     # Calculate metrics
-    # ['clusterName', 'policyName', 'mitigation', 'operation', 'kind', 'namespace', 'decision'],
+    # ['clusterName', 'policyName', 'pod', 'name', 'mitigation', 'namespace', 'severity']
     results = {}
     if len(events) > 0:
         for event in events:
@@ -132,11 +133,11 @@ def collect() -> dict:
             labels = []
             labels.append(event['clusterName'])
             labels.append(event['policyName'])
-            labels.append(event.get('mitigation', 'n/a'))
-            labels.append(event.get('operation', 'n/a'))
-            labels.append(event['kind'])
-            labels.append(event['namespace'])
-            labels.append(event['decision'])
+            labels.append(event['k8s.pod.name'])
+            labels.append(event['name'])
+            labels.append(event['mitigation'])
+            labels.append(event['k8s.ns.name'])
+            labels.append(event['severity'])
             labelss = '#'.join(labels)
 
             if (labelss in results):
