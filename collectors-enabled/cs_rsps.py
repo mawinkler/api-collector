@@ -23,7 +23,7 @@ import pprint
 
 # Constants
 _LOGGER = logging.getLogger(__name__)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s (%(threadName)s) [%(funcName)s] %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -60,11 +60,11 @@ def collect() -> dict:
     result = {
         "CounterMetricFamilyName": "cs_rsps",
         "CounterMetricFamilyHelpText": "Container Security Runtime Events per Slice",
-        "CounterMetricFamilyLabels": ['clusterName', 'policyName', 'pod', 'name', 'mitigation', 'namespace', 'severity'],
+        "CounterMetricFamilyLabels": ['clusterName', 'policyName', 'pod', 'name', 'ruleid', 'mitigation', 'namespace', 'severity'],
         "Metrics": []
     }
 
-    start_time = (datetime.utcnow() - timedelta(minutes=60)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_time = (datetime.utcnow() - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
     end_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # mitigation_table = {
@@ -135,6 +135,7 @@ def collect() -> dict:
             labels.append(event['policyName'])
             labels.append(event['k8s.pod.name'])
             labels.append(event['name'])
+            labels.append(event['ruleID'])
             labels.append(event['mitigation'])
             labels.append(event['k8s.ns.name'])
             labels.append(event['severity'])

@@ -22,7 +22,7 @@ from datetime import datetime, timedelta
 
 # Constants
 _LOGGER = logging.getLogger(__name__)
-logging.basicConfig(stream=sys.stdout, level=logging.INFO,
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG,
                     format='%(asctime)s %(levelname)s (%(threadName)s) [%(funcName)s] %(message)s',
                     datefmt='%Y-%m-%d %H:%M:%S')
 
@@ -59,11 +59,11 @@ def collect() -> dict:
     result = {
         "CounterMetricFamilyName": "cs_eps",
         "CounterMetricFamilyHelpText": "Container Security Events per Slice",
-        "CounterMetricFamilyLabels": ['clusterName', 'policyName', 'mitigation', 'operation', 'kind', 'namespace', 'decision'],
+        "CounterMetricFamilyLabels": ['clusterName', 'policyName', 'mitigation', 'operation', 'kind', 'namespace', 'decision', 'type'],
         "Metrics": []
     }
 
-    start_time = (datetime.utcnow() - timedelta(minutes=60)).strftime("%Y-%m-%dT%H:%M:%SZ")
+    start_time = (datetime.utcnow() - timedelta(minutes=5)).strftime("%Y-%m-%dT%H:%M:%SZ")
     end_time = datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
 
     # mitigation_table = {
@@ -137,12 +137,26 @@ def collect() -> dict:
             labels.append(event['kind'])
             labels.append(event['namespace'])
             labels.append(event['decision'])
-            labelss = '#'.join(labels)
 
-            if (labelss in results):
-                results[labelss] = results[labelss] + 1
+            reasons = event.get('reasons', None)
+            if (reasons):
+                for reason in reasons:
+                    temp = labels.copy()
+                    temp.append(reason['type'])
+                    labelss = '#'.join(temp)
+                    if (labelss in results):
+                        results[labelss] = results[labelss] + 1
+                    else:
+                        results[labelss] = 1
+                    _LOGGER.debug("{},{}".format(labelss, results[labelss]))
             else:
-                results[labelss] = 1
+                labels.append('n/a')
+                labelss = '#'.join(labels)
+                if (labelss in results):
+                    results[labelss] = results[labelss] + 1
+                else:
+                    results[labelss] = 1
+                _LOGGER.debug("{},{}".format(labelss, results[labelss]))
 
     # Convert to [[,,,],]
     for entry in results:
