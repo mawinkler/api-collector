@@ -319,7 +319,7 @@
           "exemplar": true,
           "expr": "sum(cs_rsps_total) by (namespace, mitigation)",
           "interval": "",
-          "legendFormat": "{{mitigation}}: {{namespace}}",
+          "legendFormat": "{{namespace}}: {{mitigation}}",
           "refId": "A"
         }
       ],
@@ -390,7 +390,7 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "right"
         },
         "tooltip": {
           "mode": "single"
@@ -2338,5 +2338,5 @@
   "timezone": "",
   "title": "Cloud One",
   "uid": "xrb7NxCMz",
-  "version": 12
+  "version": 13
 }

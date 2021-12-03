@@ -124,7 +124,7 @@ def collect() -> dict:
     _LOGGER.debug("{} Container Security reasons received".format(str(len(events))))
 
     # Calculate metrics
-    # ['clusterName', 'policyName', 'mitigation', 'operation', 'kind', 'namespace', 'decision'],
+    # ['clusterName', 'policyName', 'mitigation', 'operation', 'kind', 'namespace', 'decision', 'type'],
     results = {}
     if len(events) > 0:
         for event in events:

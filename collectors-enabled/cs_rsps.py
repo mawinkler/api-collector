@@ -125,7 +125,7 @@ def collect() -> dict:
     _LOGGER.debug("{} Container Security runtime events received".format(str(len(events))))
 
     # Calculate metrics
-    # ['clusterName', 'policyName', 'pod', 'name', 'mitigation', 'namespace', 'severity']
+    # ['clusterName', 'policyName', 'pod', 'name', 'ruleid', 'mitigation', 'namespace', 'severity']
     results = {}
     if len(events) > 0:
         for event in events:
